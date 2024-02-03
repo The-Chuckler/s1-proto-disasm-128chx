@@ -1,0 +1,10 @@
+s1built.bin
+s1built.prev.bin
+sonic.lst
+sonic.log
+sonic.p
+SonLVL INI Files/dllcache/*
+
+# Hivebrains comment utility
+Comment.bat
+Comment.exe
