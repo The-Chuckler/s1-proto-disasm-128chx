@@ -1,12 +1,12 @@
 ; ---------------------------------------------------------------------------
 
 Sonic_SpecialChunk:
-		cmpi.b	#id_SLZ,(v_zone).w
-		beq.s	loc_F3F4
+;		cmpi.b	#id_SLZ,(v_zone).w
+;		beq.s	loc_F3F4
 		tst.b	(v_zone).w
 		bne.w	locret_F490
 
-loc_F3F4:
+;loc_F3F4:
 		move.w	obj.Ypos(a0),d0
 		lsr.w	#1,d0
 		andi.w	#$380,d0

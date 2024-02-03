@@ -6875,8 +6875,8 @@ Art_MzTorch:	binclude "artunc/MZ Background torch.bin"
 ; ---------------------------------------------------------------------------
 LayoutArray:	; GHZ
 		dc.w LayoutGHZ1FG-LayoutArray, LayoutGHZ1BG-LayoutArray, byte_6CE54-LayoutArray
-		dc.w LayoutGHZ2FG-LayoutArray, LayoutGHZ2BG-LayoutArray, byte_6CF3C-LayoutArray
-		dc.w LayoutGHZ3FG-LayoutArray, LayoutGHZ3BG-LayoutArray, byte_6D084-LayoutArray
+		dc.w LayoutGHZ2FG-LayoutArray, LayoutGHZ1BG-LayoutArray, byte_6CF3C-LayoutArray
+		dc.w LayoutGHZ3FG-LayoutArray, LayoutGHZ1BG-LayoutArray, byte_6D084-LayoutArray
 		dc.w byte_6D088-LayoutArray, byte_6D088-LayoutArray, byte_6D088-LayoutArray
 		; LZ
 		dc.w LayoutLZ1FG-LayoutArray, LayoutLZBG-LayoutArray, byte_6D190-LayoutArray
@@ -6885,8 +6885,8 @@ LayoutArray:	; GHZ
 		dc.w byte_6D320-LayoutArray, byte_6D320-LayoutArray, byte_6D320-LayoutArray
 		; MZ
 		dc.w LayoutMZ1FG-LayoutArray, LayoutMZ1BG-LayoutArray, LayoutMZ1FG-LayoutArray
-		dc.w LayoutMZ2FG-LayoutArray, LayoutMZ2BG-LayoutArray, byte_6D614-LayoutArray
-		dc.w LayoutMZ3FG-LayoutArray, LayoutMZ3BG-LayoutArray, byte_6D7DC-LayoutArray
+		dc.w LayoutMZ2FG-LayoutArray, LayoutMZ1BG-LayoutArray, byte_6D614-LayoutArray
+		dc.w LayoutMZ3FG-LayoutArray, LayoutMZ1BG-LayoutArray, byte_6D7DC-LayoutArray
 		dc.w byte_6D7E0-LayoutArray, byte_6D7E0-LayoutArray, byte_6D7E0-LayoutArray
 		; SLZ
 		dc.w LayoutSLZ1FG-LayoutArray, LayoutSLZBG-LayoutArray, byte_6DBE4-LayoutArray
@@ -6917,14 +6917,14 @@ LayoutGHZ1BG:	binclude "levels/ghzbg1.bin"
 byte_6CE54:	dc.l 0
 LayoutGHZ2FG:	binclude "levels/ghz2.bin"
 		even
-LayoutGHZ2BG:	binclude "levels/ghzbg2.bin"
-		even
+;LayoutGHZ2BG:	binclude "levels/ghzbg2.bin"
+;		even
 
 byte_6CF3C:	dc.l 0
 LayoutGHZ3FG:	binclude "levels/ghz3.bin"
 		even
-LayoutGHZ3BG:	binclude "levels/ghzbg3.bin"
-		even
+;LayoutGHZ3BG:	binclude "levels/ghzbg3.bin"
+;		even
 
 byte_6D084:	dc.l 0
 byte_6D088:	dc.l 0
@@ -6949,14 +6949,14 @@ LayoutMZ1BG:	binclude "levels/mzbg1.bin"
 		even
 LayoutMZ2FG:	binclude "levels/mz2.bin"
 		even
-LayoutMZ2BG:	binclude "levels/mzbg2.bin"
-		even
+;LayoutMZ2BG:	binclude "levels/mzbg2.bin"
+;		even
 
 byte_6D614:	dc.l 0
 LayoutMZ3FG:	binclude "levels/mz3.bin"
 		even
-LayoutMZ3BG:	binclude "levels/mzbg3.bin"
-		even
+;LayoutMZ3BG:	binclude "levels/mzbg3.bin"
+;		even
 
 byte_6D7DC:	dc.l 0
 byte_6D7E0:	dc.l 0
