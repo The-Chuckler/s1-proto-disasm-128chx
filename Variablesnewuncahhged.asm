@@ -9,10 +9,10 @@ v_startofram:
 v_256x256:		ds.b $A400			; 256x256 tile mappings ($A400 bytes)
 v_256x256_end:
 
-layoutsize:		= $4;0
+layoutsize:		= $40
 
-v_lvllayout:		=	$FFFFA400;ds.b $1			; level layout buffer ($400 bytes)
-v_lvllayoutbg:		= 	$FFFFA404;v_lvllayout+layoutsize
+v_lvllayout:		ds.b $400			; level layout buffer ($400 bytes)
+v_lvllayoutbg:		= v_lvllayout+layoutsize
 v_lvllayout_end:
 
 v_bgscroll_buffer:	ds.b $200
@@ -20,12 +20,15 @@ v_ngfx_buffer:		ds.b $200
 v_ngfx_buffer_end:
 v_spritequeue:		ds.b $400
 v_16x16:		ds.b $1800			; 16x16 tile mappings ($1800 bytes)
+v_16x16_end:
 v_sgfx_buffer:		ds.b $300			; sonic graphics ram buffer ($300 bytes)
 v_tracksonic:		ds.b $100			; sonic position table ($100 bytes)
-v_hscrolltablebuffer:	ds.b $400
+v_hscrolltablebuffer:	ds.b $380
 v_hscrolltablebuffer_end:
-v_objspace:		ds.b 0				; RAM for object space ($600 bytes)
-v_player:		ds.b 0
+			ds.b $80
+v_hscrolltablebuffer_end_padded:
+v_objspace:						; RAM for object space ($600 bytes)
+v_player:
 v_objslot0:		ds.b obj.Size
 v_objslot1:		ds.b obj.Size
 v_objslot2:		ds.b obj.Size
@@ -58,7 +61,7 @@ v_objslot1C:		ds.b obj.Size
 v_objslot1D:		ds.b obj.Size
 v_objslot1E:		ds.b obj.Size
 v_objslot1F:		ds.b obj.Size
-v_lvlobjspace:		ds.b 0
+v_lvlobjspace:
 			ds.b obj.Size
 			ds.b obj.Size
 			ds.b obj.Size
@@ -155,11 +158,11 @@ v_lvlobjspace:		ds.b 0
 			ds.b obj.Size
 			ds.b obj.Size
 			ds.b obj.Size
-v_lvlobjend:		ds.b 0
-v_objend:		ds.b 0
+v_lvlobjend:
+v_objend:
 ; $FFFFF000
 v_snddriver_ram:	ds.b $600			; start of RAM for the sound driver data ($600 bytes)
-v_snddriver_ram_end:	ds.b 0
+v_snddriver_ram_end:
 			dephase
 
 ; =================================================================================
@@ -167,7 +170,7 @@ v_snddriver_ram_end:	ds.b 0
 ; =================================================================================
 
 			phase 0
-v_startofvariables:	ds.b 0
+v_startofvariables:
 v_sndprio:		ds.b 1				; sound priority (priority of new music/SFX must be higher or =al to this value or it won't play; bit 7 of priority being set prevents this value from changing)
 v_main_tempo_timeout:	ds.b 1				; Counts down to zero; when zero, resets to next value and delays song by 1 frame
 v_main_tempo:		ds.b 1				; Used for music only
@@ -294,8 +297,8 @@ v_levseldelay:		ds.w 1				; level select - time until change when up/down is hel
 v_levselitem:		ds.w 1				; level select - item selected (2 bytes)
 v_levselsound:		ds.w 1				; level select - sound selected (2 bytes)
 			ds.b $14			; unused
-v_plc_buffer:		ds.b $60			; pattern load cues buffer (maximum $10 PLCs) ($60 bytes)
-v_plc_buffer_end:	ds.b 0
+v_plc_buffer:		ds.b 6*16			; pattern load cues buffer (maximum $10 PLCs) ($60 bytes)
+v_plc_buffer_only_end:
 v_plc_buffer_reg0:	ds.l 1				; pattern load cues buffer (4 bytes)
 v_plc_buffer_reg4:	ds.l 1				; pattern load cues buffer (4 bytes)
 v_plc_buffer_reg8:	ds.l 1				; pattern load cues buffer (4 bytes)
@@ -305,6 +308,7 @@ v_plc_buffer_reg14:	ds.l 1				; pattern load cues buffer (4 bytes)
 f_plc_execute:		ds.w 1				; flag set for pattern load cue execution (2 bytes)
 v_plc_buffer_reg1A:	ds.w 1
 			ds.l 1				; unused
+v_plc_buffer_end:
 v_screenposx:		ds.l 1
 v_screenposy:		ds.l 1
 v_bgscreenposx:		ds.l 1
@@ -390,16 +394,16 @@ f_switch:		ds.w 1
 			ds.b $E				; unused
 v_scroll_block_1_size:	ds.w 1
 			ds.b $E				; unused
-v_spritetablebuffer:	ds.b $200
-			ds.b $100			; unused
+v_spritetablebuffer:	ds.b $280
+v_spritetablebuffer_end
+			ds.b $80			; unused
 v_pal_dry:		ds.b $80
 v_pal_dry_dup:		ds.b $80
-v_objstate:		ds.b $C0				; object state list
-v_objstate_end:		ds.b 0
-			ds.b $140				; stack
-v_systemstack:		ds.b 0
-
-v_crossresetram:	ds.b 0
+v_objstate:		ds.b $C0			; object state list
+v_objstate_end:
+			ds.b $140			; stack
+v_systemstack:
+v_crossresetram:
 			ds.w 1
 f_restart:		ds.w 1				; restart level flag (2 bytes)
 v_framecount:		ds.b 1				; frame counter (adds 1 every frame) (2 bytes)
@@ -458,22 +462,6 @@ v_colladdr1:	equ $FFFFFFD0	; (4 bytes)
 v_colladdr2:	equ $FFFFFFD4	; (4 bytes)
 v_top_solid_bit:	equ $FFFFFFD8
 v_lrb_solid_bit:	equ $FFFFFFD9
-;v_256x256:	equ   $FF0000	; 128x128 tile mappings ($A400 bytes)
-;v_lvllayout:	equ $FFFFA400	; level layout ROM address (4 bytes)
-;v_lvllayoutbg:	equ $FFFFA404	; background layout ROM address (4 bytes)
-;v_256x256:		ds.b	$8000;ds.b $A400			; 256x256 tile mappings ($A400 bytes)
-;v_256x256_end:
-;
-;layoutsize:		= $80;40
-;
-;v_lvllayout:	ds.b	$1000				; level layout buffer ($1000 bytes)
-;v_lvllayoutbg:	= v_lvllayout+$80
-;		ds.b $400			; level layout buffer ($400 bytes)
-;v_lvllayoutbg:		= v_lvllayout+layoutsize
-;v_lvllayout_end:
-;v_128x128:	equ   $FF0000	; 128x128 tile mappings ($A400 bytes)
-;v_lvllayoutfg:	equ $FFFFA400	; level layout ROM address (4 bytes)
-;v_lvllayoutbg2:	equ $FFFFA404	; background layout ROM address (4 bytes)
 f_demo:			ds.w 1
 v_demonum:		ds.w 1
 			ds.l 1				; unused
@@ -483,16 +471,17 @@ f_debugmode:		ds.b 1
 			ds.b 1				; unused
 v_init:			ds.b 1				; 'init' text string (4 bytes)
 			ds.w 1				; unused
-v_endofram:		ds.b 0
+			ds.b 1				; unused
+v_endofram:
 			dephase
 
 	phase v_objstate
-v_regbuffer:		ds.b	$40				; stores registers d0-a7 during an error event
-v_spbuffer:		ds.l	1				; stores most recent sp address
-v_errortype:		ds.b	1				; error type
+v_regbuffer:		ds.b	$40			; stores registers d0-a7 during an error event
+v_spbuffer:		ds.l	1			; stores most recent sp address
+v_errortype:		ds.b	1			; error type
 	dephase
 
 	phase v_objslot18
-f_victory:		ds.b 1					; flag for victory animation (1 byte)
+f_victory:		ds.b 1				; flag for victory animation (1 byte)
 	dephase
 			!org 0

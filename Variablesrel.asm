@@ -6,14 +6,16 @@ ramaddr function x,(-(x&$80000000)<<1)|x
 
 	phase ramaddr ( $FFFF0000 )
 v_startofram:
-v_256x256:		ds.b $A400			; 256x256 tile mappings ($A400 bytes)
-v_256x256_end:
+v_256x256old:		ds.b	$8000;ds.b $A400			; 256x256 tile mappings ($A400 bytes)
+v_256x256old_end:
 
-layoutsize:		= $4;0
+layoutsize:		= $80;40
 
-v_lvllayout:		=	$FFFFA400;ds.b $1			; level layout buffer ($400 bytes)
-v_lvllayoutbg:		= 	$FFFFA404;v_lvllayout+layoutsize
-v_lvllayout_end:
+v_lvllayoutold:	ds.b	$1000				; level layout buffer ($1000 bytes)
+;v_lvllayoutbg:	= v_lvllayout+$80
+;		ds.b $400			; level layout buffer ($400 bytes)
+v_lvllayoutbgold:		= v_lvllayout+layoutsize
+v_lvllayout_endold:
 
 v_bgscroll_buffer:	ds.b $200
 v_ngfx_buffer:		ds.b $200
@@ -458,9 +460,9 @@ v_colladdr1:	equ $FFFFFFD0	; (4 bytes)
 v_colladdr2:	equ $FFFFFFD4	; (4 bytes)
 v_top_solid_bit:	equ $FFFFFFD8
 v_lrb_solid_bit:	equ $FFFFFFD9
-;v_256x256:	equ   $FF0000	; 128x128 tile mappings ($A400 bytes)
-;v_lvllayout:	equ $FFFFA400	; level layout ROM address (4 bytes)
-;v_lvllayoutbg:	equ $FFFFA404	; background layout ROM address (4 bytes)
+v_256x256:	equ   $FF0000	; 128x128 tile mappings ($A400 bytes)
+v_lvllayout:	equ $FFFFA400	; level layout ROM address (4 bytes)
+v_lvllayoutbg:	equ $FFFFA404	; background layout ROM address (4 bytes)
 ;v_256x256:		ds.b	$8000;ds.b $A400			; 256x256 tile mappings ($A400 bytes)
 ;v_256x256_end:
 ;

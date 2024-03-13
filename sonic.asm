@@ -1596,7 +1596,7 @@ loc_25D8:
 		move.l	(a0)+,(a4)+
 		dbf	d0,.loadblocks
 		lea	(Blk256_GHZ).l,a0
-		lea	(v_256x256&$FFFFFF).l,a1
+		lea	(v_256x256).l,a1;6&$FFFFFF).l,a1
 		bsr.w	KosDec
 		bsr.w	LevelLayoutLoad
 		lea	(vdp_control_port).l,a5
@@ -1958,8 +1958,17 @@ MusicList:	dc.b bgm_GHZ
 ; ---------------------------------------------------------------------------
 
 GM_Level:
+		bset	#7,(v_gamemode).w ; add $80 to screen mode (for pre level sequence)
+		tst.w	(f_demo).w
+		bmi.s	Level_NoMusicFade
 		move.b	#bgm_Fade,d0
 		bsr.w	PlaySound_Special
+Level_NoMusicFade:
+		bsr.w	ClearPLC
+		bsr.w	PaletteFadeOut
+		tst.w	(f_demo).w	; is an ending sequence demo running?
+;		bmi.s	Level_ClrRam	; if yes, branch
+;		disable_ints
 		locVRAM $B000
 		lea	(Nem_TitleCard).l,a0
 		bsr.w	NemDec
@@ -1977,7 +1986,42 @@ GM_Level:
 loc_2C0A:
 		moveq	#plcid_Main2,d0
 		bsr.w	AddPLC
-		bsr.w	PaletteFadeOut
+Level_ClrRam:
+		lea	(v_objspace).w,a1
+		moveq	#0,d0
+		move.w	#$7FF,d1
+
+	Level_ClrObjRam:
+		move.l	d0,(a1)+
+		dbf	d1,Level_ClrObjRam ; clear object RAM
+
+		lea	($FFFFF628).w,a1
+		moveq	#0,d0
+		move.w	#$15,d1
+
+	Level_ClrVars1:
+		move.l	d0,(a1)+
+		dbf	d1,Level_ClrVars1 ; clear misc variables
+
+		lea	(v_screenposx).w,a1
+		moveq	#0,d0
+		move.w	#$3F,d1
+
+	Level_ClrVars2:
+		move.l	d0,(a1)+
+		dbf	d1,Level_ClrVars2 ; clear misc variables
+
+		lea	(v_oscillate+2).w,a1
+		moveq	#0,d0
+		move.w	#$47,d1
+
+	Level_ClrVars3:
+		move.l	d0,(a1)+
+		dbf	d1,Level_ClrVars3 ; clear object variables
+
+		disable_ints
+;Level_ClrRam:
+;		bsr.w	PaletteFadeOut
 		bsr.w	ClearScreen
 		lea	(vdp_control_port).l,a6
 		move.w	#$8B03,(a6)
@@ -1988,29 +2032,31 @@ loc_2C0A:
 		move.w	#$8AAF,(v_hbla_hreg).w
 		move.w	#$8004,(a6)
 		move.w	#$8720,(a6)
-		lea	(v_objspace).w,a1
-		moveq	#0,d0
-		move.w	#$7FF,d1
-
-loc_2C4C:
-		move.l	d0,(a1)+
-		dbf	d1,loc_2C4C
-		lea	(v_screenposx).w,a1
-		moveq	#0,d0
-		move.w	#$3F,d1
-
-loc_2C5C:
-		move.l	d0,(a1)+
-		dbf	d1,loc_2C5C
-		lea	(v_oscillate+2).w,a1
-		moveq	#0,d0
-		move.w	#$27,d1
-
-loc_2C6C:
-		move.l	d0,(a1)+
-		dbf	d1,loc_2C6C
+;		lea	(v_objspace).w,a1
+;		moveq	#0,d0
+;		move.w	#$7FF,d1
+;
+;loc_2C4C:
+;		move.l	d0,(a1)+
+;		dbf	d1,loc_2C4C
+;		lea	(v_screenposx).w,a1
+;		moveq	#0,d0
+;		move.w	#$3F,d1
+;
+;loc_2C5C:
+;		move.l	d0,(a1)+
+;		dbf	d1,loc_2C5C
+;		lea	(v_oscillate+2).w,a1
+;		moveq	#0,d0
+;		move.w	#$27,d1
+;
+;loc_2C6C:
+;		move.l	d0,(a1)+
+;		dbf	d1,loc_2C6C
 		moveq	#palid_Sonic,d0
 		bsr.w	PalLoad2
+		tst.w	(f_demo).w
+		bmi.s	Level_SkipTtlCard
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
 		lea	(MusicList).l,a1
@@ -2031,6 +2077,7 @@ loc_2C92:
 		bne.s	loc_2C92
 		bsr.w	DebugPosLoadArt
 		jsr	(sub_117C6).l
+Level_SkipTtlCard:
 		moveq	#palid_Sonic,d0
 		bsr.w	PalLoad1
 		bsr.w	LoadLevelBounds
@@ -2109,6 +2156,8 @@ loc_2D54:
 		addq.b	#4,(v_objslot3+obj.Routine).w
 		addq.b	#4,(v_objslot4+obj.Routine).w
 		addq.b	#4,(v_objslot5+obj.Routine).w
+Level_StartGame:
+		bclr	#7,(v_gamemode).w ; subtract $80 from mode to end pre-level stuff
 
 GM_LevelLoop:
 		bsr.w	PauseGame
@@ -2885,7 +2934,7 @@ LoadTilesAsYouMove:
 		lea	(vdp_data_port).l,a6
 		lea	(v_bg1_scroll_flags).w,a2
 		lea	(v_bgscreenposx).w,a3
-		lea	(v_lvllayoutbg).w,a4
+		movea.l	(v_lvllayoutbg).w,a4;lea	(v_lvllayoutbg).w,a4
 		move.w	#$6000,d2
 		bsr.w	sub_4484
 		lea	(v_bg2_scroll_flags).w,a2
@@ -2893,7 +2942,7 @@ LoadTilesAsYouMove:
 		bsr.w	sub_4524
 		lea	(v_fg_scroll_flags).w,a2
 		lea	(v_screenposx).w,a3
-		lea	(v_lvllayout).w,a4
+		movea.l	(v_lvllayout).w,a4;lea	(v_lvllayout).w,a4
 		move.w	#$4000,d2
 		tst.b	(a2)
 		beq.s	locret_4482
@@ -3305,11 +3354,11 @@ mapLevelLoadFull:
 		lea	(vdp_control_port).l,a5
 		lea	(vdp_data_port).l,a6
 		lea	(v_screenposx).w,a3
-		lea	(v_lvllayout).w,a4
+		movea.l	(v_lvllayout).w,a4;lea	(v_lvllayout).w,a4
 		move.w	#$4000,d2
 		bsr.s	DrawChunks
 		lea	(v_bgscreenposx).w,a3
-		lea	(v_lvllayoutbg).w,a4
+		movea.l	(v_lvllayoutbg).w,a4;lea	(v_lvllayoutbg).w,a4
 		move.w	#$6000,d2
 
 DrawChunks:
@@ -3373,7 +3422,7 @@ MainLevelLoadBlock:
 ;		move.l	(a0)+,(a4)+
 ;		dbf	d0,.loadblocks
 		movea.l	(a2)+,a0
-		lea	(v_256x256).l,a1;&$FFFFFF).l,a1
+		lea	(v_256x256&$FFFFFF).l,a1
 		bsr.w	KosDec
 		bsr.w	LevelLayoutLoad
 		move.w	(a2)+,d0
@@ -3391,105 +3440,48 @@ MainLevelLoadBlock:
 		rts
 ; ---------------------------------------------------------------------------
 ;sub_485C:
-		moveq	#0,d0
-		move.b	(v_lives).w,d1
-		cmpi.b	#2,d1
-		bcs.s	loc_4876
-		move.b	d1,d0
-		subq.b	#1,d0
-		cmpi.b	#5,d0
-		bcs.s	loc_4876
-		move.b	#4,d0
-
-loc_4876:
-		lea	(vdp_data_port).l,a6
-		locVRAM $ACBE
-		move.l	#$8579857A,d2
-		bsr.s	sub_489E
-		locVRAM $AD3E
-		move.l	#$857B857C,d2
-
-sub_489E:
-		moveq	#0,d3
-		moveq	#3,d1
-		sub.w	d0,d1
-		bcs.s	loc_48AC
-
-loc_48A6:
-		move.l	d3,(a6)
-		dbf	d1,loc_48A6
-
-loc_48AC:
-		move.w	d0,d1
-		subq.w	#1,d1
-		bcs.s	locret_48B8
-
-loc_48B2:
-		move.l	d2,(a6)
-		dbf	d1,loc_48B2
-
-locret_48B8:
-		rts
+;		moveq	#0,d0
+;		move.b	(v_lives).w,d1
+;		cmpi.b	#2,d1
+;		bcs.s	loc_4876
+;		move.b	d1,d0
+;		subq.b	#1,d0
+;		cmpi.b	#5,d0
+;		bcs.s	loc_4876
+;		move.b	#4,d0
+;
+;loc_4876:
+;		lea	(vdp_data_port).l,a6
+;		locVRAM $ACBE
+;		move.l	#$8579857A,d2
+;		bsr.s	sub_489E
+;		locVRAM $AD3E
+;		move.l	#$857B857C,d2
+;
+;sub_489E:
+;		moveq	#0,d3
+;		moveq	#3,d1
+;		sub.w	d0,d1
+;		bcs.s	loc_48AC
+;
+;loc_48A6:
+;		move.l	d3,(a6)
+;		dbf	d1,loc_48A6
+;
+;loc_48AC:
+;		move.w	d0,d1
+;		subq.w	#1,d1
+;		bcs.s	locret_48B8
+;
+;loc_48B2:
+;		move.l	d2,(a6)
+;		dbf	d1,loc_48B2
+;
+;locret_48B8:
+;		rts
 ; ---------------------------------------------------------------------------
 
-LevelLayoutLoad:
-		lea	(v_lvllayout).w,a3
-		move.w	#$3FF,d1;move.w	#$1FF,d1
-		moveq	#0,d0
-
-loc_48C4:
-		move.l	d0,(a3)+
-		dbf	d1,loc_48C4
-		
-		lea	(v_lvllayout).w,a3
-		moveq	#0,d1
-		bsr.w	sub_48DA
-		lea	(v_lvllayoutbg).w,a3
-		moveq	#2,d1
-
-sub_48DA:
-		move.w	(v_zone).w,d0
-		
-		
-		lsl.b	#6,d0
-		lsr.w	#5,d0
-		move.w	d0,d2
-		add.w	d0,d0
-		add.w	d2,d0
-		add.w	d1,d0
-		lea	(LayoutArray).l,a1
-		move.w	(a1,d0.w),d0
-		lea	(a1,d0.w),a1
-		moveq	#0,d1
-		move.w	d1,d2
-		move.b	(a1)+,d1
-		move.b	(a1)+,d2
-		move.l	d1,d5
-		addq.l	#1,d5
-		moveq	#0,d3
-		move.w	#$80,d3
-		divu.w	d5,d3
-		subq.w	#1,d3
-
-loc_4900:
-loc_73DE:
-		movea.l	a3,a0;move.w	d1,d0
-		move.w	d3,d4;movea.l	a3,a0
-
-loc_73E2:
-		move.l	a1,-(sp)
-		move.w	d1,d0
-
-loc_73E6:
-		move.b	(a1)+,(a0)+
-		dbf	d0,loc_73E6
-		movea.l	(sp)+,a1
-		dbf	d4,loc_73E2
-		lea	(a1,d5.w),a1
-		lea	$100(a3),a3
-		dbf	d2,loc_73DE
-		rts
-; ---------------------------------------------------------------------------
+		include	"P128LayoutLoader.asm";include	"NaLayoutLoader.asm"
 
 		include "_inc/DynamicLevelEvents.asm"
 
@@ -6870,140 +6862,7 @@ Art_MzSaturns:	binclude "artunc/MZ Saturns.bin"
 Art_MzTorch:	binclude "artunc/MZ Background torch.bin"
 		even
 
-; ---------------------------------------------------------------------------
-; Level	layout index
-; ---------------------------------------------------------------------------
-LayoutArray:	; GHZ
-		dc.w LayoutGHZ1FG-LayoutArray, LayoutGHZ1BG-LayoutArray, byte_6CE54-LayoutArray
-		dc.w LayoutGHZ2FG-LayoutArray, LayoutGHZ1BG-LayoutArray, byte_6CF3C-LayoutArray
-		dc.w LayoutGHZ3FG-LayoutArray, LayoutGHZ1BG-LayoutArray, byte_6D084-LayoutArray
-		dc.w byte_6D088-LayoutArray, byte_6D088-LayoutArray, byte_6D088-LayoutArray
-		; LZ
-		dc.w LayoutLZ1FG-LayoutArray, LayoutLZBG-LayoutArray, byte_6D190-LayoutArray
-		dc.w LayoutLZ2FG-LayoutArray, LayoutLZBG-LayoutArray, byte_6D216-LayoutArray
-		dc.w LayoutLZ3FG-LayoutArray, LayoutLZBG-LayoutArray, byte_6D31C-LayoutArray
-		dc.w byte_6D320-LayoutArray, byte_6D320-LayoutArray, byte_6D320-LayoutArray
-		; MZ
-		dc.w LayoutMZ1FG-LayoutArray, LayoutMZ1BG-LayoutArray, LayoutMZ1FG-LayoutArray
-		dc.w LayoutMZ2FG-LayoutArray, LayoutMZ1BG-LayoutArray, byte_6D614-LayoutArray
-		dc.w LayoutMZ3FG-LayoutArray, LayoutMZ1BG-LayoutArray, byte_6D7DC-LayoutArray
-		dc.w byte_6D7E0-LayoutArray, byte_6D7E0-LayoutArray, byte_6D7E0-LayoutArray
-		; SLZ
-		dc.w LayoutSLZ1FG-LayoutArray, LayoutSLZBG-LayoutArray, byte_6DBE4-LayoutArray
-		dc.w LayoutSLZ2FG-LayoutArray, LayoutSLZBG-LayoutArray, byte_6DBE4-LayoutArray
-		dc.w LayoutSLZ3FG-LayoutArray, LayoutSLZBG-LayoutArray, byte_6DBE4-LayoutArray
-		dc.w byte_6DBE4-LayoutArray, byte_6DBE4-LayoutArray, byte_6DBE4-LayoutArray
-		; SZ
-		dc.w LayoutSZ1FG-LayoutArray, LayoutSZBG-LayoutArray, byte_6DCD8-LayoutArray
-		dc.w LayoutSZ2FG-LayoutArray, LayoutSZBG-LayoutArray, byte_6DDDA-LayoutArray
-		dc.w LayoutSZ3FG-LayoutArray, LayoutSZBG-LayoutArray, byte_6DF30-LayoutArray
-		dc.w byte_6DF34-LayoutArray, byte_6DF34-LayoutArray, byte_6DF34-LayoutArray
-		; CWZ
-		dc.w LayoutCWZ1-LayoutArray, LayoutCWZ2-LayoutArray, LayoutCWZ2-LayoutArray
-		dc.w LayoutCWZ2-LayoutArray, byte_6E33C-LayoutArray, byte_6E33C-LayoutArray
-		dc.w LayoutCWZ3-LayoutArray, LayoutCWZ3-LayoutArray, LayoutCWZ3-LayoutArray
-		dc.w byte_6E344-LayoutArray, byte_6E344-LayoutArray, byte_6E344-LayoutArray
-		; Ending
-		dc.w LayoutTest-LayoutArray, byte_6E3CA-LayoutArray, byte_6E3CA-LayoutArray
-		dc.w byte_6E3CE-LayoutArray, byte_6E3CE-LayoutArray, byte_6E3CE-LayoutArray
-		dc.w byte_6E3D2-LayoutArray, byte_6E3D2-LayoutArray, byte_6E3D2-LayoutArray
-		dc.w byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray, byte_6E3D6-LayoutArray
-
-LayoutGHZ1FG:	binclude "levels/ghz1.bin"
-		even
-LayoutGHZ1BG:	binclude "levels/ghzbg1.bin"
-		even
-
-byte_6CE54:	dc.l 0
-LayoutGHZ2FG:	binclude "levels/ghz2.bin"
-		even
-;LayoutGHZ2BG:	binclude "levels/ghzbg2.bin"
-;		even
-
-byte_6CF3C:	dc.l 0
-LayoutGHZ3FG:	binclude "levels/ghz3.bin"
-		even
-;LayoutGHZ3BG:	binclude "levels/ghzbg3.bin"
-;		even
-
-byte_6D084:	dc.l 0
-byte_6D088:	dc.l 0
-LayoutLZ1FG:	binclude "levels/lz1.bin"
-		even
-LayoutLZBG:	binclude "levels/lzbg.bin"
-		even
-
-byte_6D190:	dc.l 0
-LayoutLZ2FG:	binclude "levels/lz2.bin"
-		even
-
-byte_6D216:	dc.l 0
-LayoutLZ3FG:	binclude "levels/lz3.bin"
-		even
-
-byte_6D31C:	dc.l 0
-byte_6D320:	dc.l 0
-LayoutMZ1FG:	binclude "levels/mz1.bin"
-		even
-LayoutMZ1BG:	binclude "levels/mzbg1.bin"
-		even
-LayoutMZ2FG:	binclude "levels/mz2.bin"
-		even
-;LayoutMZ2BG:	binclude "levels/mzbg2.bin"
-;		even
-
-byte_6D614:	dc.l 0
-LayoutMZ3FG:	binclude "levels/mz3.bin"
-		even
-;LayoutMZ3BG:	binclude "levels/mzbg3.bin"
-;		even
-
-byte_6D7DC:	dc.l 0
-byte_6D7E0:	dc.l 0
-LayoutSLZ1FG:	binclude "levels/slz1.bin"
-		even
-LayoutSLZBG:	binclude "levels/slzbg.bin"
-		even
-LayoutSLZ2FG:	binclude "levels/slz2.bin"
-		even
-LayoutSLZ3FG:	binclude "levels/slz3.bin"
-		even
-
-byte_6DBE4:	dc.l 0
-LayoutSZ1FG:	binclude "levels/sz1.bin"
-		even
-LayoutSZBG:	binclude "levels/szbg.bin"
-		even
-
-byte_6DCD8:	dc.l 0
-LayoutSZ2FG:	binclude "levels/sz2.bin"
-		even
-
-byte_6DDDA:	dc.l 0
-LayoutSZ3FG:	binclude "levels/sz3.bin"
-		even
-
-byte_6DF30:	dc.l 0
-byte_6DF34:	dc.l 0
-LayoutCWZ1:	binclude "levels/cwz1.bin"
-		even
-LayoutCWZ2:	binclude "levels/cwz2.bin"
-		even
-byte_6E33C:	binclude "levels/cwz2bg.bin"
-		even
-LayoutCWZ3:	binclude "levels/cwz3.bin"
-		even
-
-byte_6E344:	dc.l 0
-LayoutTest:     binclude "leftovers/test.bin"		; Seems to be a test layout
-		even
-
-byte_6E3CA:     dc.l 0
-byte_6E3CE:	dc.l 0
-byte_6E3D2:	dc.l 0
-byte_6E3D6:	dc.l 0
-
-		align $2000				; Padding
+		include	"p128layouts.asm";include	"protolayouts.asm"
 ; ===========================================================================
 ; Object Layout Index
 ; ===========================================================================

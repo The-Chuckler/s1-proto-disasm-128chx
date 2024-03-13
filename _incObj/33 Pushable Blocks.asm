@@ -168,7 +168,7 @@ loc_A0CC:
 sub_A0E2:
 		cmpi.w	#id_MZ*$100+1,(v_zone).w
 		bne.s	loc_A108
-		move.w	#$FFE0,d2
+		move.w	#-$20,d2;#$FFE0,d2
 		cmpi.w	#$DD0,obj.Xpos(a0)
 		beq.s	loc_A126
 		cmpi.w	#$CC0,obj.Xpos(a0)
